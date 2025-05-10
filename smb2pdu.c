@@ -8354,6 +8354,11 @@ static __be32 idev_ipv4_address(struct in_device *idev)
 	struct in_ifaddr *ifa;
 
 	rcu_read_lock();
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
+#define in_dev_for_each_ifa_rcu(ifa, in_dev)			\
+	for (ifa = rcu_dereference((in_dev)->ifa_list); ifa;	\
+	     ifa = rcu_dereference(ifa->ifa_next))
+#endif
 	in_dev_for_each_ifa_rcu(ifa, idev) {
 		if (ifa->ifa_flags & IFA_F_SECONDARY)
 			continue;
@@ -8945,8 +8950,13 @@ int smb2_ioctl(struct ksmbd_work *work)
 		 * fall back to vfs_copy_file_range(), should be avoided when
 		 * the flag DUPLICATE_EXTENTS_DATA_EX_SOURCE_ATOMIC is set.
 		 */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 		cloned = vfs_clone_file_range(fp_in->filp, src_off,
 					      fp_out->filp, dst_off, length, 0);
+#else
+                cloned = vfs_clone_file_range(fp_in->filp, src_off,
+                                              fp_out->filp, dst_off, length);
+#endif
 		if (cloned == -EXDEV || cloned == -EOPNOTSUPP) {
 			ret = -EOPNOTSUPP;
 			goto dup_ext_out;

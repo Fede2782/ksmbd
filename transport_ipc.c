@@ -219,6 +219,7 @@ static struct genl_family ksmbd_genl_family = {
 
 static void ksmbd_nl_init_fixup(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(ksmbd_genl_ops); i++)
@@ -226,6 +227,7 @@ static void ksmbd_nl_init_fixup(void)
 						GENL_DONT_VALIDATE_DUMP;
 
 	ksmbd_genl_family.policy = ksmbd_nl_policy;
+#endif
 }
 
 static int rpc_context_flags(struct ksmbd_session *sess)
